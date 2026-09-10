@@ -1,0 +1,12 @@
+[submodule "deps/ensembl-vep"]
+	path = deps/ensembl-vep
+	url = https://github.com/Ensembl/ensembl-vep.git
+[submodule "deps/POPScomp"]
+	path = deps/POPScomp
+	url = https://github.com/Fraternalilab/POPScomp.git
+[submodule "deps/PDBEncode"]
+	path = deps/PDBEncode
+	url = https://github.com/Fraternalilab/PDBEncode.git
+[submodule "deps/pipelines"]
+	path = deps/pipelines
+	url = https://github.com/open-webui/pipelines.git

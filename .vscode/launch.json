@@ -1,0 +1,94 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "1.0.0",
+    "configurations": [
+        {
+            "name": "download_sources",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "download_sources.py",
+            "console": "integratedTerminal",
+            "args": [
+                "-d",
+                "/mnt/datastore"
+            ]
+        },
+        {
+            "name": "multiomicskg",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "multiomicskg.py",
+            "console": "integratedTerminal",
+            "args": [
+                "-d",
+                "/mnt/datastore",
+                "-v",
+                "/root/multiomicskg/deps/ensembl-vep/vep",
+                "-p",
+                "202609A"
+            ]
+        },
+        {
+            "name": "[docker] Run multiomicskg",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "multiomicskg.py",
+            "console": "integratedTerminal",
+            "args": [
+                "-d",
+                "/root/datastore",
+                "-v",
+                "/root/multiomicskg/deps/ensembl-vep/vep"
+            ]
+        },
+        {
+            "name": "Run structural_data_generator.py",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "structural_data_generator.py",
+            "console": "integratedTerminal",
+            "args": [
+                "-d",
+                "/mnt/datastore",
+                "-s",
+                "/mnt/datastore/scrap",
+                "-m",
+                "0",
+                "-p",
+                "202609A_"
+            ]
+        },
+        {
+            "name": "[docker] Run structural_data_generator.py",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "structural_data_generator.py",
+            "console": "integratedTerminal",
+            "args": [
+                "-d",
+                "/mnt/datastore",
+                "-s",
+                "/mnt/datastore/scrap",
+                "-p",
+                "202609A_"
+            ]
+        },
+        {
+            "name": "structural_data_compiler.py",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "structural_data_compiler.py",
+            "console": "integratedTerminal",
+            "args": [
+                "-d",
+                "/mnt/datastore",
+                "-s",
+                "/mnt/datastore/scrap",
+                "-p",
+                "202607A"
+            ]
+        }
+    ]
+}

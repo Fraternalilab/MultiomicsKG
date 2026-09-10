@@ -1,0 +1,19 @@
+name: multiomicskg-integration
+services:
+  mkgint:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile-integration
+    image: multiomicskg-int:1.0
+    stdin_open: true
+    tty: true
+    command:
+      [
+        "/bin/bash",
+        # "-c",
+        # "eval $(poetry env activate)",
+      ]
+    volumes:
+      - ${DATASTORE}:/root/datastore:rw
+    environment:
+      - DATASTORE=/root/datastore

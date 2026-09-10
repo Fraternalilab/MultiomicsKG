@@ -1,0 +1,33 @@
+# Dockerfile - Build Instructions for Docker Image with all required software and dependencies to run pipelines from snvpred
+# syntax=docker/dockerfile:1
+# Created with ubuntu:latest, tested with ubuntu:noble
+FROM ubuntu:noble
+RUN apt update
+RUN DEBIAN_FRONTEND="noninteractive" apt install -y g++ git zsh curl python3 make autoconf automake libxml2-dev pkg-config zlib1g-dev gpg-agent pip pipx vim libgsl-dev libblas-dev libgfortran-*-dev cpanminus tabix openjdk-21-jre jq
+# R
+RUN apt install -y --no-install-recommends r-base r-cran-knitr r-cran-bio3d r-cran-ggplot2 r-cran-rgl r-cran-optparse
+RUN pipx install poetry==2.2.1
+RUN echo "export PATH="$PATH:/root/.local/bin"" >> /root/.bashrc
+# PERL for Ensembl VEP
+RUN cpanm -n Archive::Zip
+RUN cpanm -n DBI
+COPY --exclude=poetry.lock --exclude=.git . /root/MultiomicsKG/
+WORKDIR /root/MultiomicsKG
+RUN /root/.local/bin/poetry install
+RUN echo "eval \$(poetry env activate)" >> /root/.bashrc
+ENV BASH_ENV="/root/.bashrc"
+ENV PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/root/.local/bin"
+# POPSC
+WORKDIR /root/MultiomicsKG/deps/POPScomp/POPSC
+RUN ./bootstrap && ./configure && make && make install
+# POPScomp
+WORKDIR /root/MultiomicsKG/deps/POPScomp
+# install "optparse" manually because Ubuntu repo only provides an outdated version
+#  RUN echo "install.packages(\"optparse\", repos=\"https://cran.rstudio.com\")" | R --no-save
+RUN R CMD build POPSR && R CMD INSTALL POPSR
+# PDBEncode
+WORKDIR /root/MultiomicsKG/deps/PDBEncode
+RUN R CMD build .
+#  RUN apt install -y libgsl-dev libblas-dev libgfortran-9-dev
+RUN R CMD INSTALL PDBencode_0.5.tar.gz
+WORKDIR /root/MultiomicsKG
