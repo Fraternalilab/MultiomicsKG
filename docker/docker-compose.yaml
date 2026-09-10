@@ -1,0 +1,111 @@
+name: chatbot-graphrag
+services:
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:0.6.43-slim
+    ports:
+      - "3000:8080"
+    volumes:
+      - ${OPEN_WEBUI}:/app/backend/data
+    extra_hosts:
+      # This makes host.docker.internal resolve to the host on Linux.
+      # With no OLLAMA_BASE_URL set, the image looks for Ollama at http://host.docker.internal:11434 (then :12434),
+      # so this line is what lets it reach an Ollama running on the host.
+      - host.docker.internal:host-gateway
+    environment:
+      - WEBUI_SECRET_KEY=your-secret-key
+    restart: unless-stopped
+    depends_on:
+      pipelines:
+        condition: service_healthy
+  pipelines:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: multiomicskg:1.0
+    command:
+      [
+        "/bin/bash",
+        "-c",
+        "eval $(poetry env activate); cd /root/MultiomicsKG/deps/pipelines/ && ./start.sh",
+      ]
+    volumes:
+      - ${DATASTORE}:/root/datastore:rw
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    environment:
+      - PIPELINES_DIR=/root/MultiomicsKG/chatbot_graphrag/pipelines/
+      - NEO4J_URI=bolt://neo4j:7687
+      - NEO4J_USERNAME=${NEO4J_USERNAME}
+      - NEO4J_PASSWORD=${NEO4J_PASSWORD}
+      - NEO4J_DATABASE=${NEO4J_DATABASE}
+      - TEXT_TO_CYPHER_MODEL="tugraph/CodeLlama-7b-Cypher-hf:latest"
+      - MAX_RESULTS=10
+      - PIPELINES_API_KEY=0p3n-w3bu!
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_MODEL=${OPENAI_MODEL}
+      - OLLAMA_MODEL=${OLLAMA_MODEL}
+      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL_FOR_DOCKER}
+      - OLLAMA_HOST=${OLLAMA_HOST_FOR_DOCKER}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - ANTHROPIC_MODEL=${ANTHROPIC_MODEL}
+    depends_on:
+      neo4j:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -fsS http://localhost:9099 | jq -e '.status == true' >/dev/null",
+        ]
+      interval: 15s
+      timeout: 3s
+      retries: 20
+      start_period: 1m
+
+  neo4j-mcp:
+    image: mcp/neo4j:latest
+    environment:
+      - NEO4J_URI=bolt://neo4j:7687
+      - NEO4J_DATABASE=${NEO4J_DATABASE}
+      - NEO4J_READ_ONLY=true
+      - NEO4J_TRANSPORT_MODE=http
+      - NEO4J_MCP_HTTP_HOST=0.0.0.0
+      - NEO4J_MCP_HTTP_PORT=8000
+      - NEO4J_TELEMETRY=false
+    ports:
+      - "8000:8000"
+    depends_on:
+      neo4j:
+        condition: service_healthy
+    restart: unless-stopped
+
+  neo4j:
+    image: neo4j:5.26.31-community
+    ports:
+      - "7687:7687"
+      - "7474:7474"
+    volumes:
+      - ${NEO4J_DATA}:/data:rw
+      - ${NEO4J_PLUGINS}:/plugins:rw
+      - ${NEO4J_LOGS}:/logs:rw
+    restart: always
+    environment:
+      - NEO4J_AUTH=${NEO4J_AUTH}
+      - NEO4J_dbms_security_procedures_unrestricted=apoc.*,gds.*
+      - NEO4J_dbms_security_procedures_allowlist=apoc.*,gds.*
+
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "cypher-shell",
+          "-u",
+          "${NEO4J_USERNAME}",
+          "-p",
+          "${NEO4J_PASSWORD}",
+          "RETURN 1",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 30s

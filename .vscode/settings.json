@@ -1,0 +1,22 @@
+{
+    "python.analysis.extraPaths": [
+        "./src/jbcommon"
+    ],
+    "terminal.integrated.env.osx": {
+        "PYTHONPATH": "${workspaceFolder}/src/jbcommon"
+    },
+    "python.testing.pytestArgs": [
+        "src/homodimers/tests"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true,
+    "python.formatting.provider": "black",
+    "flake8.args": [
+        "--max-line-length",
+        "180"
+    ],
+    "editor.formatOnSave": true,
+    "python.analysis.typeCheckingMode": "basic",
+    "python-envs.defaultEnvManager": "ms-python.python:poetry",
+    "python-envs.defaultPackageManager": "ms-python.python:poetry"
+}
